@@ -1,0 +1,52 @@
+name: Windows build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '**/*.cs'
+      - '**/*.csproj'
+      - '**/*.xaml'
+      - '**/*.sln'
+      - '**/*.props'
+      - '**/*.targets'
+      - 'global.json'
+      - '.github/workflows/windows-build.yml'
+  pull_request:
+    paths:
+      - '**/*.cs'
+      - '**/*.csproj'
+      - '**/*.xaml'
+      - '**/*.sln'
+      - '**/*.props'
+      - '**/*.targets'
+      - 'global.json'
+      - '.github/workflows/windows-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore CanvasLab.sln
+
+      - name: Build Release
+        run: dotnet build CanvasLab.sln --configuration Release --no-restore
+
+      - name: Run smoke checks
+        run: dotnet run --project tests/CanvasLab.SmokeTests/CanvasLab.SmokeTests.csproj --configuration Release --no-build
+
+# This workflow will run only after the local source and solution are uploaded.
+# Validate the smoke-test CLI against the actual project before public release.

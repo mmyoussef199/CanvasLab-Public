@@ -1,0 +1,162 @@
+<Window x:Class="CanvasLab.Views.MainWindow"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Title="CanvasLab" Icon="/CanvasLab;component/Assets/CanvasLab.ico" Width="1280" Height="820" MinWidth="900" MinHeight="620"
+ WindowStartupLocation="CenterScreen" UseLayoutRounding="True" SnapsToDevicePixels="True" Loaded="Window_Loaded">
+ <Window.InputBindings>
+  <KeyBinding Key="O" Modifiers="Control" Command="{Binding OpenImageCommand}"/>
+  <KeyBinding Key="D0" Modifiers="Control" Command="{Binding ActualSizeCommand}"/>
+ </Window.InputBindings>
+ <Grid Background="{StaticResource WindowBrush}">
+  <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+
+  <Border Grid.Row="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+   <DockPanel Margin="18,0,10,0">
+    <TextBlock DockPanel.Dock="Left" Text="CanvasLab" FontSize="20" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,22,0"/>
+    <Menu Height="42" Style="{StaticResource ModernMenu}">
+     <MenuItem Header="_File" Style="{StaticResource ModernTopMenuItem}">
+      <MenuItem Header="_Open Image…" Command="{Binding OpenImageCommand}" InputGestureText="Ctrl+O" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xE8E5;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+      <Separator Style="{StaticResource ModernMenuSeparator}"/>
+      <MenuItem Header="_Save Image" Command="{Binding SaveImageCommand}" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xE74E;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+      <Separator Style="{StaticResource ModernMenuSeparator}"/>
+      <MenuItem Header="E_xit" Click="ExitMenuItem_Click" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xF3B1;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+     </MenuItem>
+     <MenuItem Header="_View" Style="{StaticResource ModernTopMenuItem}">
+      <MenuItem Header="_Fit to Window" Command="{Binding FitToWindowCommand}" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xE9A6;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+      <MenuItem Header="_100%" Command="{Binding ActualSizeCommand}" InputGestureText="Ctrl+0" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xE740;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+      <Separator Style="{StaticResource ModernMenuSeparator}"/>
+      <MenuItem Header="Zoom _In" Command="{Binding ZoomInCommand}" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xE8A3;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+      <MenuItem Header="Zoom _Out" Command="{Binding ZoomOutCommand}" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xE71F;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+     </MenuItem>
+     <MenuItem Header="_Help" Style="{StaticResource ModernTopMenuItem}">
+      <MenuItem Header="_About CanvasLab" Click="AboutMenuItem_Click" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xE946;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+      <MenuItem Header="_How to Use" Click="HowToUseMenuItem_Click" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xE897;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+      <Separator Style="{StaticResource ModernMenuSeparator}"/>
+      <MenuItem Header="_GitHub Project" Click="GitHubProjectMenuItem_Click" Style="{StaticResource ModernSubmenuItem}"><MenuItem.Icon><TextBlock Text="&#xE8A7;" Style="{StaticResource ModernMenuIcon}"/></MenuItem.Icon></MenuItem>
+     </MenuItem>
+    </Menu>
+   </DockPanel>
+  </Border>
+
+  <Border Grid.Row="1" Background="{StaticResource SurfaceBrush}" Padding="18,12" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+   <StackPanel Orientation="Horizontal">
+    <Button Style="{StaticResource ToolbarButton}" Command="{Binding OpenImageCommand}" Margin="0,0,10,0"><StackPanel Orientation="Horizontal"><TextBlock Text="＋" FontSize="19" Margin="0,-2,8,0"/><TextBlock Text="Open Image" VerticalAlignment="Center"/></StackPanel></Button>
+    <Button Style="{StaticResource ToolbarButton}" Command="{Binding PickColorsCommand}" Margin="0,0,10,0" Content="Pick Colors" ToolTip="Click, then choose a pixel in the image."/>
+    <Button Style="{StaticResource ToolbarButton}" Command="{Binding MakeImageSmallerCommand}" Margin="0,0,10,0" Content="Make Image Smaller"/>
+    <Button Style="{StaticResource ToolbarButton}" Command="{Binding SaveImageCommand}" Content="Save Image"/>
+   </StackPanel>
+  </Border>
+
+  <Grid Grid.Row="2">
+   <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="360"/></Grid.ColumnDefinitions>
+   <Grid Grid.Column="0" Background="#0D0F13">
+    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+    <Border Grid.Row="0" Background="#4A2530" BorderBrush="#B75B71" BorderThickness="0,0,0,1" Padding="14,10" Visibility="{Binding HasError, Converter={StaticResource BoolToVisibility}}"><DockPanel><Button DockPanel.Dock="Right" Content="Close" Command="{Binding DismissErrorCommand}" Style="{StaticResource SmallButton}" Margin="14,0,0,0"/><TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" VerticalAlignment="Center"/></DockPanel></Border>
+    <Grid Grid.Row="1" x:Name="WorkspaceHost" SizeChanged="WorkspaceHost_SizeChanged">
+     <ScrollViewer x:Name="ImageScrollViewer" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto" PanningMode="Both" Background="Transparent"
+      PreviewMouseWheel="ImageScrollViewer_PreviewMouseWheel" PreviewMouseLeftButtonDown="ImageScrollViewer_PreviewMouseLeftButtonDown"
+      PreviewMouseLeftButtonUp="ImageScrollViewer_PreviewMouseLeftButtonUp" PreviewMouseMove="ImageScrollViewer_PreviewMouseMove">
+      <Grid MinWidth="{Binding RelativeSource={RelativeSource AncestorType=ScrollViewer}, Path=ViewportWidth}" MinHeight="{Binding RelativeSource={RelativeSource AncestorType=ScrollViewer}, Path=ViewportHeight}">
+       <Border HorizontalAlignment="Center" VerticalAlignment="Center" Background="#171A20" BorderBrush="#3A404C" BorderThickness="1" Padding="1" Visibility="{Binding HasImage, Converter={StaticResource BoolToVisibility}}">
+        <Grid Width="{Binding DisplayImageWidth}" Height="{Binding DisplayImageHeight}">
+         <Image x:Name="ImageView" Source="{Binding ImageSource}" Stretch="Fill" RenderOptions.BitmapScalingMode="HighQuality" SnapsToDevicePixels="True"/>
+         <Canvas IsHitTestVisible="False" Visibility="{Binding HasSelectedColor, Converter={StaticResource BoolToVisibility}}">
+          <Ellipse Width="14" Height="14" Canvas.Left="{Binding MarkerLeft}" Canvas.Top="{Binding MarkerTop}" Stroke="White" StrokeThickness="2" Fill="#33000000"/>
+         </Canvas>
+        </Grid>
+       </Border>
+       <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="360" Visibility="{Binding HasImage, Converter={StaticResource InverseBoolToVisibility}}">
+        <Border Width="72" Height="72" CornerRadius="16" Background="{StaticResource RaisedBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" HorizontalAlignment="Center"><TextBlock Text="＋" FontSize="38" Foreground="{StaticResource AccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-5,0,0"/></Border>
+        <TextBlock Text="Open an image" FontSize="24" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,20,0,8"/>
+        <TextBlock Text="Choose a JPEG, PNG, or WebP image from your computer. Your image stays on this device." Foreground="{StaticResource MutedTextBrush}" TextAlignment="Center" TextWrapping="Wrap" LineHeight="21"/>
+        <Button Content="Open Image" Command="{Binding OpenImageCommand}" Style="{StaticResource ToolbarButton}" HorizontalAlignment="Center" Margin="0,22,0,0"/>
+       </StackPanel>
+      </Grid>
+     </ScrollViewer>
+     <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,14,0,0" Background="#D9222630" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="6" Visibility="{Binding HasImage, Converter={StaticResource BoolToVisibility}}">
+      <StackPanel Orientation="Horizontal"><Button Content="Fit" Command="{Binding FitToWindowCommand}" Style="{StaticResource SmallButton}" Margin="0,0,6,0"/><Button Content="100%" Command="{Binding ActualSizeCommand}" Style="{StaticResource SmallButton}" Margin="0,0,6,0"/><Button Content="−" Command="{Binding ZoomOutCommand}" Style="{StaticResource SmallButton}" FontSize="18" Margin="0,0,6,0"/><TextBlock Text="{Binding ZoomText}" Width="64" TextAlignment="Center" VerticalAlignment="Center" FontWeight="SemiBold"/><Button Content="+" Command="{Binding ZoomInCommand}" Style="{StaticResource SmallButton}" FontSize="18"/></StackPanel>
+     </Border>
+     <Border HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,18" Background="#E6222630" BorderBrush="{StaticResource AccentBrush}" BorderThickness="1" CornerRadius="8" Padding="14,9" Visibility="{Binding IsColorPickingActive, Converter={StaticResource BoolToVisibility}}"><TextBlock Text="Click the image to pick a color"/></Border>
+     <Border Background="#B0000000" Visibility="{Binding IsBusy, Converter={StaticResource BoolToVisibility}}"><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><ProgressBar IsIndeterminate="True" Width="220" Height="5" Foreground="{StaticResource AccentBrush}"/><TextBlock Text="Opening image…" Margin="0,14,0,0"/></StackPanel></Border>
+    </Grid>
+   </Grid>
+
+   <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0" Padding="18">
+    <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel>
+     <TextBlock Text="Image Details" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,14"/>
+     <Border Style="{StaticResource PanelCard}"><StackPanel><TextBlock Text="{Binding FileName}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/><TextBlock Text="{Binding FilePath}" Foreground="{StaticResource MutedTextBrush}" FontSize="12" TextWrapping="Wrap" Margin="0,5,0,14"/><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions><StackPanel><TextBlock Text="Dimensions" Foreground="{StaticResource MutedTextBrush}" FontSize="12"/><TextBlock Text="{Binding DimensionsText}" Margin="0,4,0,0"/></StackPanel><StackPanel Grid.Column="1"><TextBlock Text="File size" Foreground="{StaticResource MutedTextBrush}" FontSize="12"/><TextBlock Text="{Binding FileSizeText}" Margin="0,4,0,0"/><TextBlock Text="{Binding SourceFormatText}" Foreground="{StaticResource MutedTextBrush}" FontSize="11" Margin="0,3,0,0"/></StackPanel></Grid></StackPanel></Border>
+
+     <TextBlock Text="Selected Color" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,14"/>
+     <Border Style="{StaticResource PanelCard}">
+      <StackPanel>
+       <TextBlock Text="Click the image to pick a color" Foreground="{StaticResource MutedTextBrush}" Visibility="{Binding HasSelectedColor, Converter={StaticResource InverseBoolToVisibility}}"/>
+       <Grid Visibility="{Binding HasSelectedColor, Converter={StaticResource BoolToVisibility}}">
+        <Grid.ColumnDefinitions><ColumnDefinition Width="64"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <Border Width="52" Height="52" CornerRadius="7" BorderBrush="#657086" BorderThickness="1" Background="{Binding SelectedColor.SwatchBrush}" VerticalAlignment="Top"/>
+        <StackPanel Grid.Column="1">
+         <TextBlock Text="Color Code" Foreground="{StaticResource MutedTextBrush}" FontSize="12"/>
+         <TextBlock Text="{Binding SelectedColor.HexCode}" FontSize="18" FontWeight="SemiBold" Margin="0,3,0,6"/>
+         <TextBlock Text="{Binding SelectedColor.RgbText}"/>
+         <TextBlock Text="{Binding SelectedColor.AlphaText}" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0"/>
+         <TextBlock Text="{Binding SelectedColor.PositionText}" Foreground="{StaticResource MutedTextBrush}" Margin="0,3,0,0"/>
+        </StackPanel>
+       </Grid>
+       <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+        <Button Content="Pick Colors" Command="{Binding PickColorsCommand}" Style="{StaticResource SmallButton}" Margin="0,0,8,0"/>
+        <Button Content="Copy Color" Command="{Binding CopySelectedColorCommand}" Style="{StaticResource SmallButton}"/>
+       </StackPanel>
+      </StackPanel>
+     </Border>
+
+     <Grid Margin="0,8,0,14"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Main Colors" FontSize="18" FontWeight="SemiBold"/><TextBlock Grid.Column="1" Text="{Binding ColorsFoundText}" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" Margin="12,0,0,0"/></Grid>
+     <Border Style="{StaticResource PanelCard}">
+      <StackPanel>
+       <TextBlock Text="Representative colors and approximate coverage." Foreground="{StaticResource MutedTextBrush}" FontSize="12" Margin="0,0,0,10"/>
+       <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,10" Visibility="{Binding IsAnalyzingColors, Converter={StaticResource BoolToVisibility}}"/>
+       <ItemsControl ItemsSource="{Binding MainColors}">
+        <ItemsControl.ItemTemplate><DataTemplate>
+         <Button Command="{Binding DataContext.CopyPaletteColorCommand, RelativeSource={RelativeSource AncestorType=Window}}" CommandParameter="{Binding}" Style="{StaticResource SmallButton}" HorizontalContentAlignment="Stretch" Margin="0,0,0,6" ToolTip="Copy this color code">
+          <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="36"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><Border Width="26" Height="26" CornerRadius="4" Background="{Binding SwatchBrush}" BorderBrush="#657086" BorderThickness="1"/><TextBlock Grid.Column="1" Text="{Binding HexCode}" VerticalAlignment="Center" FontWeight="SemiBold" Margin="8,0,0,0"/><TextBlock Grid.Column="2" Text="{Binding CoverageText}" Foreground="{StaticResource MutedTextBrush}" VerticalAlignment="Center" Margin="10,0,0,0"/></Grid>
+         </Button>
+        </DataTemplate></ItemsControl.ItemTemplate>
+       </ItemsControl>
+       <TextBlock Text="Fully transparent pixels are not included. Partly transparent pixels count by visible alpha." Foreground="{StaticResource MutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0"/>
+      </StackPanel>
+     </Border>
+
+     <TextBlock Text="Make Image Smaller" FontSize="18" FontWeight="SemiBold" Margin="0,8,0,14"/>
+     <Border Style="{StaticResource PanelCard}">
+      <StackPanel>
+       <TextBlock Text="Save As" Foreground="{StaticResource MutedTextBrush}" FontSize="12"/>
+       <ComboBox Style="{StaticResource DarkComboBox}" ItemsSource="{Binding OutputFormats}" SelectedItem="{Binding OutputFormat}" Margin="0,5,0,12">
+        <ComboBox.ItemTemplate><DataTemplate><TextBlock Text="{Binding Converter={StaticResource ImageFormatDisplay}}"/></DataTemplate></ComboBox.ItemTemplate>
+       </ComboBox>
+       <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="12"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+        <StackPanel><TextBlock Text="Width" Foreground="{StaticResource MutedTextBrush}" FontSize="12"/><TextBox Text="{Binding TargetWidth, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" Padding="7"/></StackPanel>
+        <StackPanel Grid.Column="2"><TextBlock Text="Height" Foreground="{StaticResource MutedTextBrush}" FontSize="12"/><TextBox Text="{Binding TargetHeight, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,0" Padding="7"/></StackPanel>
+       </Grid>
+       <CheckBox Content="Keep Proportions" IsChecked="{Binding KeepProportions}" Margin="0,10,0,12"/>
+       <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Image Quality" Foreground="{StaticResource MutedTextBrush}"/><TextBlock Grid.Column="1" Text="{Binding ImageQuality}"/></Grid>
+       <Slider Minimum="1" Maximum="100" Value="{Binding ImageQuality}" IsEnabled="{Binding IsQualityEnabled}" TickFrequency="1" Margin="0,7,0,4"/>
+       <TextBlock Text="PNG keeps full quality, so this setting is not needed." Foreground="{StaticResource MutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,10"/>
+       <Grid Margin="0,4,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Original Size" Foreground="{StaticResource MutedTextBrush}"/><TextBlock Grid.Column="1" Text="{Binding OriginalSizeText}"/></Grid>
+       <Grid Margin="0,5,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="New Size" Foreground="{StaticResource MutedTextBrush}"/><TextBlock Grid.Column="1" Text="{Binding NewSizeText}" FontWeight="SemiBold"/></Grid>
+       <Grid Margin="0,5,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="Space Saved" Foreground="{StaticResource MutedTextBrush}"/><TextBlock Grid.Column="1" Text="{Binding SpaceSavedText}" FontWeight="SemiBold" TextAlignment="Right"/></Grid>
+       <ProgressBar IsIndeterminate="True" Height="4" Margin="0,12,0,0" Visibility="{Binding IsOptimizing, Converter={StaticResource BoolToVisibility}}"/>
+       <TextBlock Text="{Binding OptimizationStatus}" Foreground="{StaticResource MutedTextBrush}" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
+       <WrapPanel Margin="0,12,0,0">
+        <Button Content="Make Image Smaller" Command="{Binding MakeImageSmallerCommand}" Style="{StaticResource SmallButton}" Margin="0,0,7,7"/>
+        <Button Content="{Binding PreviewButtonText}" Command="{Binding PreviewCommand}" Style="{StaticResource SmallButton}" Margin="0,0,7,7"/>
+        <Button Content="Save Image" Command="{Binding SaveImageCommand}" Style="{StaticResource SmallButton}" Margin="0,0,7,7"/>
+        <Button Content="Reset" Command="{Binding ResetOptimizationCommand}" Style="{StaticResource SmallButton}" Margin="0,0,0,7"/>
+       </WrapPanel>
+      </StackPanel>
+     </Border>
+     <Border Background="#182D25" BorderBrush="#2F6651" BorderThickness="1" CornerRadius="8" Padding="12"><TextBlock Text="Private by design: images stay on your computer." Foreground="#A8E3C6" TextWrapping="Wrap"/></Border>
+    </StackPanel></ScrollViewer>
+   </Border>
+  </Grid>
+
+  <Border Grid.Row="3" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="16,8"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource MutedTextBrush}" TextTrimming="CharacterEllipsis"/><TextBlock Grid.Column="1" Text="{Binding DimensionsText}" Margin="24,0,0,0"/><TextBlock Grid.Column="2" Text="{Binding ZoomText}" Margin="24,0,0,0"/><TextBlock Grid.Column="3" Text="{Binding FileSizeText}" Margin="24,0,0,0"/></Grid></Border>
+ </Grid>
+</Window>
