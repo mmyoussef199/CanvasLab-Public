@@ -21,8 +21,8 @@ First public beta release.
 ## Verification
 Expected installer: `CanvasLab-Setup-0.1.0-beta.1.exe`
 
-Size: `64,607,305 bytes` (original tested build)
+Size: `64,603,061 bytes`
 
-SHA-256: `CAC6BD10139E7E3DEF5DFC73CFC5AE04AC499976B2EAB8CBE12D7893AE871E7F`
+SHA-256: `92F36D218A0C4C7AF3684470632EFB80A84DFE9FB46B8D20FC0DF125251DCC23`
 
-**Note:** These size and hash values describe the original tested installer. If the installer is rebuilt to correct public GitHub links, publish its **new** verified size and hash instead. Do not label a rebuilt installer with the old checksum.
+These values identify the installer built from the public source with CanvasLab-Public links. The installer is not digitally signed.

@@ -6,11 +6,11 @@
 
 ## Download and install
 
-Download the Windows x64 installer from [GitHub Releases](https://github.com/mmyoussef199/CanvasLab-Public/releases). The first beta release asset will be named `CanvasLab-Setup-0.1.0-beta.1.exe`.
+Download the Windows x64 installer from [GitHub Releases](https://github.com/mmyoussef199/CanvasLab-Public/releases). The v0.1.0-beta.1 release asset is named `CanvasLab-Setup-0.1.0-beta.1.exe`.
 
 Run the installer and follow its prompts. No separate .NET installation or developer tools are required. The setup installs for the current user, creates a Start Menu shortcut, and optionally creates a Desktop shortcut. Uninstall through Windows Settings.
 
-**Release status:** The public source repository is being prepared. A downloadable release must be verified on the Releases page before it is considered published.
+**Release status:** Official beta installers are published only on the repository's GitHub Releases page.
 
 ## Features
 
